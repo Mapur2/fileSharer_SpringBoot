@@ -1,9 +1,16 @@
 package com.fileSharer;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api")
@@ -23,9 +30,20 @@ public class FileController {
 
     @GetMapping("/download/{uid}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String uid) {
-        Resource resource = storageService.load(uid);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+        try {
+            Resource resource = storageService.load(uid);
+            String filename = resource.getFilename();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getFile().toPath()))
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(new ByteArrayResource(e.getMessage().getBytes())); // Or return a ResponseEntity with a message
+        }
     }
+
 }
