@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Sharing App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+          margin: 0;
+          font-family: 'Inter', sans-serif;
+          background: linear-gradient(to right, #e0f7fa, #ffffff);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .container {
+          background: white;
+          padding: 40px;
+          width: 90%;
+          max-width: 500px;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+          border-radius: 20px;
+          margin-top: 40px;
+        }
+
+        h2 {
+          text-align: center;
+          margin-bottom: 30px;
+          font-weight: 600;
+          color: #00796b;
+        }
+
+        label {
+          font-weight: 500;
+          margin-bottom: 8px;
+          display: block;
+          color: #444;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid #ccc;
+          width: 100%;
+          margin-bottom: 15px;
+          box-sizing: border-box;
+          font-size: 16px;
+        }
+
+        button {
+          padding: 12px;
+          border: none;
+          border-radius: 10px;
+          background: #00796b;
+          color: white;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          width: 100%;
+          margin-bottom: 10px;
+        }
+
+        button:hover {
+          background: #004d40;
+        }
+
+        #uploadResult {
+          background: #e0f2f1;
+          padding: 15px;
+          border-radius: 10px;
+          margin-top: 20px;
+          font-size: 14px;
+          color: #004d40;
+        }
+
+        hr {
+          margin: 30px 0;
+          border: none;
+          border-top: 1px solid #eee;
+        }
+
+        .footer {
+          text-align: center;
+          margin: 40px 0 10px;
+          font-size: 14px;
+          color: #555;
+        }
+
+        .footer a {
+          color: #00796b;
+          text-decoration: none;
+        }
+
+        .footer a:hover {
+          text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📁 Share Your File</h2>
+
+    <form id="uploadForm">
+        <label>Upload a File</label>
+        <input type="file" id="fileInput" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="uploadResult"></div>
+
+    <hr>
+
+    <form id="downloadForm">
+        <label>Download with UID</label>
+        <input type="text" id="uidInput" placeholder="Enter UID" required>
+        <button type="submit">Download</button>
+    </form>
+</div>
+
+<div class="footer">
+    Developed by <a href="https://mapur2.github.io/new_portfolio/" target="_blank">Rupam Modak</a>
+</div>
+
+<script>
+    const uploadForm = document.getElementById('uploadForm');
+    const downloadForm = document.getElementById('downloadForm');
+
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const uid = await response.text();
+      document.getElementById('uploadResult').innerHTML = `
+        <strong>✅ Upload Successful!</strong><br/>
+        <strong>UID:</strong> ${uid}<br/>
+        You can use this UID to download the file within 10 minutes.
+      `;
+    });
+
+    downloadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const uid = document.getElementById('uidInput').value.trim();
+      if (!uid) return;
+
+      window.location.href = `/api/download/${uid}`;
+    });
+</script>
+
+</body>
+</html>
