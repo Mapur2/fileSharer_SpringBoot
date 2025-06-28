@@ -33,10 +33,14 @@ public class FileController {
         try {
             Resource resource = storageService.load(uid);
             String filename = resource.getFilename();
+            String contentType = Files.probeContentType(resource.getFile().toPath());
+            if (contentType == null) {
+                contentType = "application/octet-stream"; // fallback
+            }
 
             return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(resource.getFile().toPath()))
                     .body(resource);
 
         } catch (Exception e) {
